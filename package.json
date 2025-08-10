@@ -29,7 +29,8 @@
     "test": "vitest run",
     "docs": "typedoc",
     "example:dev": "vite --config example/vite.config.ts",
-    "example:preview": "vite preview --config example/vite.config.ts"
+    "example:preview": "vite preview --config example/vite.config.ts",
+    "preexample:dev": "npm install --no-audit --no-fund"
   },
   "repository": {
     "type": "git",
