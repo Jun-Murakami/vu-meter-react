@@ -1,7 +1,7 @@
 {
   "name": "vu-meter-react",
   "private": false,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "React VU Meter component (React 16+ to 19).",
   "author": "Jun Murakami",
   "license": "MIT",
@@ -17,7 +17,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE*"
   ],
   "sideEffects": false,
   "peerDependencies": {
@@ -32,7 +34,8 @@
     "start": "vite --config example/vite.config.ts",
     "example:dev": "vite --config example/vite.config.ts",
     "example:preview": "vite preview --config example/vite.config.ts",
-    "preexample:dev": "npm install --no-audit --no-fund"
+    "preexample:dev": "npm install --no-audit --no-fund",
+    "prepublishOnly": "npm run build && npm test"
   },
   "devDependencies": {
     "@types/node": "^24.2.1",
