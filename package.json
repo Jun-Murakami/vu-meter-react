@@ -3,6 +3,7 @@
   "private": false,
   "version": "0.1.0",
   "description": "React VU Meter component (React 16+ to 19).",
+  "author": "Jun Murakami",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.cjs",
