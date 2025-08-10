@@ -1,5 +1,7 @@
 # vu-meter-react
 
+<img width="1090" height="592" alt="image" src="https://github.com/user-attachments/assets/413aaa8c-b1f7-4366-88ec-96cf7c307e3a" />
+
 React VU meter component designed to work from legacy React (16.8+) up to React 19. It computes RMS from Web Audio in real time and drives the needle with VU ballistics (~300 ms attack/release). Comes with light/dark themes and responsive sizing.
 
 ## Demo
