@@ -28,6 +28,7 @@
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "docs": "typedoc",
+    "start": "vite --config example/vite.config.ts",
     "example:dev": "vite --config example/vite.config.ts",
     "example:preview": "vite preview --config example/vite.config.ts",
     "preexample:dev": "npm install --no-audit --no-fund"
