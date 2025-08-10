@@ -1,69 +1,85 @@
-# React + TypeScript + Vite
+# vu-meter-react
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React VU meter component designed to work from legacy React (16.8+) up to React 19. It computes RMS from Web Audio in real time and drives the needle with VU ballistics (~300 ms attack/release). Comes with light/dark themes and responsive sizing.
 
-Currently, two official plugins are available:
+## Installation
+When published on npm:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm i vu-meter-react
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Monorepo/local development:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```ts
+import { VUMeter } from "../../src"; // relative import to the local source
 ```
+
+## Quick start
+
+```tsx
+import { VUMeter } from "vu-meter-react";
+
+// Stereo (L/R)
+<VUMeter
+  audioContext={audioContext}
+  sourceNode={sourceNode}
+  mono={false}
+  referenceLevel={-18}
+  options={{ width: 300, theme: "light" }}
+/>
+
+// Mono
+<VUMeter
+  audioContext={audioContext}
+  sourceNode={sourceNode}
+  mono
+  label="MONO"
+  referenceLevel={-20}
+  options={{ width: 260, theme: "dark" }}
+/>
+```
+
+## API
+
+### Component
+- `VUMeter(props: VUMeterProps)`
+  - Single component that renders either a single (mono) meter or a stereo pair (L/R)
+
+### Types
+- `VUMeterProps`
+  - `audioContext: AudioContext | null`
+  - `sourceNode: AudioNode | null`
+  - `mono?: boolean` — mono meter when true, stereo when false (default: false)
+  - `label?: string` — mono: "MONO", stereo: "L"/"R" by default
+  - `referenceLevel?: number` — dBFS treated as 0 VU (default: -18)
+  - `options?: VUMeterOptions`
+
+- `VUMeterOptions`
+  - `theme?: 'dark' | 'light'` (default: 'light')
+  - `needleColor?: string`
+  - `labelColor?: string`
+  - `backgroundColor?: string`
+  - `boxColor?: string`
+  - `fontFamily?: string`
+  - `width?: number` — height is auto-calculated by aspect ratio when unspecified
+  - `height?: number` — width is auto-calculated by aspect ratio when unspecified
+
+### Rendering and metering
+- SVG scale rendering with color accents for warning zones
+- Needle is rotated via CSS transform; tuned for smooth animation
+- Peak lamp turns on near the upper range and fades out after ~1s
+- RMS via `getFloatTimeDomainData()`, converted to dBFS, then mapped to VU with measured piecewise interpolation
+- VU ballistics (~300 ms attack/release) for natural motion
+
+### Notes
+- Due to browser autoplay policies, create/resume `AudioContext` from a user gesture (e.g., clicking Play)
+- In stereo mode, the component internally uses a `ChannelSplitterNode` to meter L/R
+
+## Build / Types / Docs
+- Build (ESM/CJS + d.ts): `npm run build` → `dist/index.mjs`, `dist/index.cjs`, `dist/index.d.ts`
+- Generate docs (TypeDoc): `npm run docs` → outputs to `docs/`
+
+## License
+MIT
+
