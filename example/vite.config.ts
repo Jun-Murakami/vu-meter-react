@@ -1,17 +1,15 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 
-// example アプリ用の Vite 設定
+const __dirname = path.dirname(fileURLToPath(new URL(import.meta.url)));
+
 export default defineConfig({
   plugins: [react()],
   root: path.resolve(__dirname),
-  server: {
-    port: 5174,
-  },
   resolve: {
     alias: {
-      // ローカルのライブラリを直接参照
       'vu-meter-react': path.resolve(__dirname, '../src'),
     },
   },
