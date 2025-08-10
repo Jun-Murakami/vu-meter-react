@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { VUMeter } from "vu-meter-react";
+import { VUMeter } from "../../src/VUMeter";
 
 // Safari のベンダープレフィックスを型として扱うための拡張
 declare global {
