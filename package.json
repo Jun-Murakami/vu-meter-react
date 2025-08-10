@@ -33,11 +33,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/<your>/<repo>.git"
+    "url": "git+https://github.com/jun-murakami/vu-meter-react.git"
   },
-  "homepage": "https://github.com/<your>/<repo>#readme",
+  "homepage": "https://github.com/jun-murakami/vu-meter-react#readme",
   "bugs": {
-    "url": "https://github.com/<your>/<repo>/issues"
+    "url": "https://github.com/jun-murakami/vu-meter-react/issues"
   },
   "engines": {
     "node": ">=18"

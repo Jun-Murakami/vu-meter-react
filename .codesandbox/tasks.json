@@ -1,0 +1,12 @@
+{
+  "setupTasks": [
+    { "name": "install", "command": "npm install --no-audit --no-fund" }
+  ],
+  "tasks": {
+    "dev": {
+      "name": "dev",
+      "command": "npm run example:dev",
+      "runAtStart": true
+    }
+  }
+}
