@@ -1,7 +1,7 @@
 {
   "name": "vu-meter-react",
   "private": false,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "React VU Meter component (React 16+ to 19).",
   "author": "Jun Murakami",
   "license": "MIT",
