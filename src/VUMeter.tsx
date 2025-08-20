@@ -1,5 +1,5 @@
 import type React from "react";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useId, useRef, useState } from "react";
 
 // 色変換ユーティリティ関数
 export interface RGBA {
@@ -14,9 +14,9 @@ function parseColor(color: string): RGBA {
   const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d*\.?\d+))?\)/);
   if (rgbaMatch) {
     return {
-      r: parseInt(rgbaMatch[1]),
-      g: parseInt(rgbaMatch[2]),
-      b: parseInt(rgbaMatch[3]),
+      r: parseInt(rgbaMatch[1], 10),
+      g: parseInt(rgbaMatch[2], 10),
+      b: parseInt(rgbaMatch[3], 10),
       a: rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 1,
     };
   }
@@ -130,6 +130,8 @@ export const Meter: React.FC<MeterProps> = ({
   referenceLevel = -20,
   options = {},
 }) => {
+  // SVG の重複 id を避けるために、useId で安定した一意 ID を生成する
+  const gradientId = useId();
   // === 可変サイズ計算 ===
   // 基準実寸（この値に対して拡大縮小する）
   const BASE_CONTAINER_WIDTH = 217; // コンテナ全体の幅
@@ -476,7 +478,7 @@ export const Meter: React.FC<MeterProps> = ({
           <title>VU Meter</title>
           {/* VUメーターのスケール描画 */}
           <defs>
-            <linearGradient id="scaleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#4CAF50" />
               <stop offset="70%" stopColor="#FFC107" />
               <stop offset="100%" stopColor={colors.needle} />
