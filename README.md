@@ -61,11 +61,14 @@ import { VUMeter } from "vu-meter-react";
   - `fontFamily?: string`
   - `width?: number` — height is auto-calculated by aspect ratio when unspecified
   - `height?: number` — width is auto-calculated by aspect ratio when unspecified
+  - `peakHoldMs?: number` — peak lamp hold time after the last clip in milliseconds (default: 1000)
+  - `peakFadeMs?: number` — peak lamp fade-out duration in milliseconds (default: 5000)
+  - `clipThresholdDeg?: number` — needle angle threshold in degrees to treat as clip (default: 23)
 
 ### Rendering and metering
 - SVG scale rendering with color accents for warning zones
 - Needle is rotated via CSS transform; tuned for smooth animation
-- Peak lamp turns on near the upper range and fades out after ~1s
+- Peak lamp turns on near the upper range; once the signal falls below the clip threshold it stays on for `peakHoldMs` and then fades out over `peakFadeMs` (defaults: hold 1s, fade 5s)
 - RMS via `getFloatTimeDomainData()`, converted to dBFS, then mapped to VU with measured piecewise interpolation
 - VU ballistics (~300 ms attack/release) for natural motion
 

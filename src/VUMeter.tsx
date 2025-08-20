@@ -79,6 +79,12 @@ export interface VUMeterOptions {
   /** 可変サイズ指定（片方のみ指定時はアスペクト比を保持してもう片方を自動算出） */
   width?: number;
   height?: number;
+  /** ピークランプの保持時間（ミリ秒）: クリップが収まってからこの時間は点灯を維持する */
+  peakHoldMs?: number;
+  /** ピークランプのフェードアウト時間（ミリ秒） */
+  peakFadeMs?: number;
+  /** クリップ検出の針角度しきい値（deg）。例: 23 付近で +3VU 近傍 */
+  clipThresholdDeg?: number;
 }
 
 // メインの VU メーターProps
@@ -248,6 +254,9 @@ export const Meter: React.FC<MeterProps> = ({
       willChange: "transform",
     } as CSSProperties,
 
+    // ピークランプのスタイル
+    // - 背景色のアルファとグロー強度を `intensity` に連動させ、rAF で制御した保持/減衰に同期
+    // - 追加の CSS トランジションは用いず、二重アニメーションによるズレを回避
     peakLamp: (isActive: boolean, intensity: number) =>
       ({
         position: "absolute",
@@ -256,11 +265,13 @@ export const Meter: React.FC<MeterProps> = ({
         width: 12 * Math.min(scaleX, scaleY),
         height: 12 * Math.min(scaleX, scaleY),
         borderRadius: "50%",
-        backgroundColor: isActive ? derivedColors.peakLamp : derivedColors.boxBorder,
+        backgroundColor: isActive
+          ? colorToRgba(derivedColors.peakLamp, 0.2 + Math.max(0, Math.min(1, intensity)) * 0.8)
+          : derivedColors.boxBorder,
         boxShadow: isActive
           ? `0 0 ${12 + intensity * 6}px ${colorToRgba(derivedColors.peakLamp, 0.3 + intensity * 0.4)}`
           : "none",
-        transition: isActive ? "none" : "all 3s ease-out",
+        transition: "none",
         border: `1px solid ${colorToRgba(colors.label, 0.3)}`,
         zIndex: 10,
       }) as CSSProperties,
@@ -298,7 +309,8 @@ export const Meter: React.FC<MeterProps> = ({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const splitterRef = useRef<ChannelSplitterNode | null>(null);
   const lastTimeRef = useRef<number>(0);
-  const peakLampTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 最後にしきい値を超えた rAF 時刻（ms）。初期は null とし、未ヒット扱いにする
+  const lastClipTimeMsRef = useRef<number | null>(null);
   const sourceChannelsRef = useRef<number>(1);
 
   useEffect(() => {
@@ -335,6 +347,11 @@ export const Meter: React.FC<MeterProps> = ({
       sourceChannelsRef.current = sourceNode.channelCount || 1;
       sourceNode.connect(analyser);
     }
+
+    // ピークランプのタイミング設定（オプションで調整可能）
+    const peakHoldMs = options.peakHoldMs ?? 1000; // 既定: 1秒保持
+    const peakFadeMs = options.peakFadeMs ?? 5000; // 既定: 5秒でフェードアウト
+    const clipThresholdDeg = options.clipThresholdDeg ?? 23; // 既定: +3VU 近傍
 
     // アニメーションループ
     const animate = (currentTime: number) => {
@@ -404,18 +421,33 @@ export const Meter: React.FC<MeterProps> = ({
         const directRotation = smoothedLevel * 50 - 25;
         setNeedleRotation(directRotation);
 
-        if (directRotation >= 23) {
-          setPeakLampActive(true);
-          setPeakLampIntensity(1.0);
+        // クリップ検出: 針角度がしきい値以上でヒット時刻を更新
+        if (directRotation >= clipThresholdDeg) {
+          lastClipTimeMsRef.current = currentTime;
+        }
 
-          if (peakLampTimeoutRef.current) {
-            clearTimeout(peakLampTimeoutRef.current);
+        // ピークランプの強度を計算
+        let intensity = 0;
+        if (lastClipTimeMsRef.current != null) {
+          const msSinceLastClip = currentTime - lastClipTimeMsRef.current;
+          if (msSinceLastClip <= peakHoldMs) {
+            // 保持期間中は最大強度
+            intensity = 1;
+          } else {
+            // 保持後はフェードアウト
+            const t = Math.min(1, (msSinceLastClip - peakHoldMs) / peakFadeMs);
+            // 線形フェード（必要ならイージングへ置換可能）
+            intensity = 1 - t;
           }
+        }
 
-          peakLampTimeoutRef.current = setTimeout(() => {
-            setPeakLampActive(false);
-            setPeakLampIntensity(0);
-          }, 1000);
+        // 強度とアクティブ状態を更新（しきい値でスナップオフ）
+        if (intensity <= 0.001) {
+          setPeakLampActive(false);
+          setPeakLampIntensity(0);
+        } else {
+          setPeakLampActive(true);
+          setPeakLampIntensity(intensity);
         }
       }
 
@@ -434,11 +466,8 @@ export const Meter: React.FC<MeterProps> = ({
       if (splitterRef.current) {
         splitterRef.current.disconnect();
       }
-      if (peakLampTimeoutRef.current) {
-        clearTimeout(peakLampTimeoutRef.current);
-      }
     };
-  }, [audioContext, sourceNode, channel, referenceLevel]);
+  }, [audioContext, sourceNode, channel, referenceLevel, options.peakHoldMs, options.peakFadeMs, options.clipThresholdDeg]);
 
   return (
     <div style={styles.container}>
